@@ -12,23 +12,23 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  username      String   @unique
-  name          String
-  password      String
-  refresh_token String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
-  friends_1     Friend[] @relation("Friend_user_1")
-  friends_2     Friend[] @relation("Friend_user_2")
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String   @unique
+  name         String
+  password     String
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  friends1     Friend[] @relation("Friend_user_1")
+  friends2     Friend[] @relation("Friend_user_2")
 }
 
 model Friend {
   id        Int      @id @default(autoincrement())
-  user_1    User     @relation("Friend_user_1", fields: [user1Id], references: [id])
+  user1     User     @relation("Friend_user_1", fields: [user1Id], references: [id])
   user1Id   Int
-  user_2    User     @relation("Friend_user_2", fields: [user2Id], references: [id])
+  user2     User     @relation("Friend_user_2", fields: [user2Id], references: [id])
   user2Id   Int
   status    Int      @default(0)
   createdAt DateTime @default(now())
