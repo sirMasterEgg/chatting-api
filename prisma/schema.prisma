@@ -12,13 +12,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String   @unique
-  name      String
-  password  String
-  friends_1 Friend[] @relation("Friend_user_1")
-  friends_2 Friend[] @relation("Friend_user_2")
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  username      String   @unique
+  name          String
+  password      String
+  refresh_token String?
+  friends_1     Friend[] @relation("Friend_user_1")
+  friends_2     Friend[] @relation("Friend_user_2")
 }
 
 model Friend {
