@@ -1,13 +1,17 @@
 import { NextFunction, Request, Response } from "express";
-import { IRegister } from "../interfaces/auth.interface";
+import { IRegister, IUserResponse } from "../interfaces/auth.interface";
 import authSchema from "../validations/auth.validation";
 import { BadRequestExceptions } from "../errors/client.exception";
+import prisma from "../config/prisma.config";
+import bcrypt from 'bcrypt';
+import { StatusCode } from "../utils/status_code.utils";
+import { User } from "@prisma/client";
 
 const login = async (req: Request, res: Response): Promise<Response> => {
     return res.status(200).json({ message: 'Login' });
 };
 const register = async (req: Request, res: Response): Promise<Response> => {
-    const reqBody = req.body as IRegister;
+    const reqBody: IRegister = req.body as IRegister;
 
     try {
         await authSchema.validateAsync(reqBody);
@@ -15,9 +19,29 @@ const register = async (req: Request, res: Response): Promise<Response> => {
         throw new BadRequestExceptions('Invalid Request Body');
     }
 
+    const hashedPassword: string = await bcrypt.hash(reqBody.password, 10);
 
+    const user: User = await prisma.user.create({
+        data: {
+            email: reqBody.email,
+            name: reqBody.name,
+            password: hashedPassword,
+            username: reqBody.username,
+        }
+    });
 
-    return res.status(200).json({ message: reqBody });
+    const data: IUserResponse = {
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+    };
+    return res.status(StatusCode.CREATED).json({
+        status: StatusCode.CREATED,
+        message: 'Successfully registered',
+        data,
+    });
+
 };
 const logout = async (req: Request, res: Response): Promise<Response> => {
     return res.status(200).json({ message: 'Logout' });

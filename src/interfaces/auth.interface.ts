@@ -4,3 +4,12 @@ export interface IRegister {
     email: string;
     name: string;
 }
+
+export interface IUserResponse {
+    username: string;
+    email: string;
+    name: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    refreshToken?: string;
+}
