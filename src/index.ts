@@ -28,28 +28,28 @@ app.use(errorHandler);
 app.all('*', pageNotFound);
 
 const run = () => {
-    console.log('Checking environment variables...');
+    console.log('🔄 Checking environment variables...');
 
     const { error } = environmentSchema.validate(process.env);
     if (error) {
-        console.log('Invalid environment variables');
+        console.log('❌ Invalid environment variables');
         console.log(error);
         return;
     }
-    console.log('Environment variables are valid');
+    console.log('✅ Environment variables are valid');
 
-    console.log('Connecting to DB...');
+    console.log('🔄 Connecting to DB...');
     const dbConnection = Promise.all([mongoose.connect(MONGODB_URL), prisma.$connect()]);
 
     dbConnection.then(([mongoose,]) => {
-        console.log(mongoose.connection.readyState === 1 ? 'Connected to MongoDB' : 'Failed to connect to MongoDB');
-        console.log('Connected to MysqlDB');
+        console.log(mongoose.connection.readyState === 1 ? '✅ Connected to MongoDB' : '❌ Failed to connect to MongoDB');
+        console.log('✅ Connected to MysqlDB');
 
         app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
+            console.log(`🚀 Server is running on port ${PORT}`);
         });
     }).catch((err) => {
-        console.log('Failed to connect to both DB');
+        console.log('❌ Failed to connect to both DB');
         console.log(err);
     }).finally(() => {
         prisma.$disconnect();
