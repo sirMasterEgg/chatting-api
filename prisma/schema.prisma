@@ -7,36 +7,26 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("MYSQL_DATABASE_URL")
 }
 
-// model User {
-//   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-//   email       String   @unique
-//   username    String   @unique
-//   password    String
-//   name        String?
-//   friends     User[]   @relation("UserFriends", fields: [friendIDs], references: [id])
-//   friendIDs   String[] @db.ObjectId
-//   friendOfs   User[]   @relation("UserFriends", fields: [friendOfIDs], references: [id])
-//   friendOfIDs String[] @db.ObjectId
-// }
 model User {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  email     String       @unique
-  username  String       @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  name      String
   password  String
-  name      String?
-  friends   Friendship[] @relation("friend")
-  friendOfs Friendship[] @relation("friendOf")
+  friends_1 Friend[] @relation("Friend_user_1")
+  friends_2 Friend[] @relation("Friend_user_2")
 }
 
-model Friendship {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  user     User   @relation("friend", fields: [userId], references: [id])
-  userId   String @db.ObjectId
-  friend   User   @relation("friendOf", fields: [friendId], references: [id])
-  friendId String @db.ObjectId
-  status   Int
+model Friend {
+  id        Int      @id @default(autoincrement())
+  user_1    User     @relation("Friend_user_1", fields: [user1Id], references: [id])
+  user1Id   Int
+  user_2    User     @relation("Friend_user_2", fields: [user2Id], references: [id])
+  user2Id   Int
+  status    Int      @default(0)
+  createdAt DateTime @default(now())
 }
