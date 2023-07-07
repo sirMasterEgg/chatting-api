@@ -17,7 +17,7 @@ model User {
   username     String   @unique
   name         String
   password     String
-  refreshToken String?
+  refreshToken String?  @db.VarChar(255)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
   friends1     Friend[] @relation("Friend_user_1")
