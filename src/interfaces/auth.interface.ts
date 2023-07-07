@@ -17,3 +17,11 @@ export interface IUserResponse {
     updatedAt?: Date;
     refreshToken?: string;
 }
+
+export interface IJwtPayload {
+    username: string;
+    email: string;
+    name: string;
+    iat?: number;
+    exp?: number;
+}

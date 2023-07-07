@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { ILogin, IRegister, IUserResponse } from "../interfaces/auth.interface";
+import { IJwtPayload, ILogin, IRegister, IUserResponse } from "../interfaces/auth.interface";
 import { loginSchema, registerSchema } from "../validations/auth.validation";
-import { BadRequestExceptions } from "../errors/client.exception";
+import { BadRequestExceptions, ForbiddenExceptions, UnauthorizedExceptions } from "../errors/client.exception";
 import prisma from "../config/prisma.config";
 import bcrypt from 'bcrypt';
 import { StatusCode } from "../utils/status_code.utils";
 import { User } from "@prisma/client";
-import { accessTokenSign, refreshTokenSign } from "../config/jwt.config";
+import { accessTokenSign, refreshTokenSign, refreshTokenVerify } from "../config/jwt.config";
 import environment from "../config/environment.config";
 
 const login = async (req: Request, res: Response): Promise<Response> => {
@@ -136,7 +136,44 @@ const logout = async (req: Request, res: Response): Promise<Response> => {
 };
 
 const refreshToken = async (req: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({ message: 'Refresh Token' });
+    const refreshToken: string = req.signedCookies.refreshToken;
+
+    if (!refreshToken) {
+        throw new UnauthorizedExceptions('Invalid cookie');
+    }
+
+    const user: User | null = await prisma.user.findFirst({
+        where: {
+            refreshToken,
+        }
+    });
+
+    if (!user) {
+        throw new ForbiddenExceptions('Invalid refresh token');
+    }
+
+    const refreshTokenData: IJwtPayload = refreshTokenVerify(refreshToken) as IJwtPayload;
+
+    if (refreshTokenData.email !== user.email) {
+        throw new ForbiddenExceptions('Invalid refresh token');
+    }
+
+    const data: IUserResponse = {
+        username: user.username,
+        email: user.email,
+        name: user.name,
+    };
+
+    const accessToken: string = accessTokenSign(data);
+
+    return res.status(StatusCode.OK).json({
+        status: StatusCode.OK,
+        message: 'Successfully regenerated access token',
+        data: {
+            ...data,
+            accessToken,
+        },
+    });
 };
 
 export const registerWrapper = (req: Request, res: Response, next: NextFunction): void => {
