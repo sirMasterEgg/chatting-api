@@ -107,7 +107,32 @@ const register = async (req: Request, res: Response): Promise<Response> => {
 
 };
 const logout = async (req: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({ message: 'Logout' });
+    const refreshToken: string = req.signedCookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.sendStatus(StatusCode.NO_CONTENT);
+    }
+
+    const user: User | null = await prisma.user.findFirst({
+        where: {
+            refreshToken,
+        }
+    });
+
+    if (!user) {
+        return res.clearCookie('refreshToken').sendStatus(StatusCode.NO_CONTENT);
+    }
+
+    await prisma.user.update({
+        where: {
+            email: user.email,
+        },
+        data: {
+            refreshToken: null,
+        }
+    });
+
+    return res.clearCookie('refreshToken').sendStatus(StatusCode.NO_CONTENT);
 };
 
 const refreshToken = async (req: Request, res: Response): Promise<Response> => {

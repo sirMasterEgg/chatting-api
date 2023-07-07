@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.set('content-type', 'application/json');
+app.set('Content-Type', 'application/json');
 app.set('x-powered-by', false);
 
 app.use('/api/v1', router);
