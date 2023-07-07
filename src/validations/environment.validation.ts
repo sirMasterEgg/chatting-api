@@ -8,6 +8,7 @@ const environmentSchema = Joi.object({
     ACCESS_TOKEN_TTL: Joi.string().required(),
     REFRESH_TOKEN_TTL: Joi.string().required(),
     COOKIE_TTL: Joi.string().required(),
+    COOKIE_SECRET: Joi.string().required(),
 }).unknown();
 
 export default environmentSchema;

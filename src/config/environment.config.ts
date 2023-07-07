@@ -8,6 +8,7 @@ const environment: IEnvironment = {
     ACCESS_TOKEN_TTL: process.env.ACCESS_TOKEN_TTL as string,
     REFRESH_TOKEN_TTL: process.env.REFRESH_TOKEN_TTL as string,
     COOKIE_TTL: process.env.COOKIE_TTL as string,
+    COOKIE_SECRET: process.env.COOKIE_SECRET as string,
 };
 
 export default environment;

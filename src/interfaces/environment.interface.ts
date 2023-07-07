@@ -6,4 +6,5 @@ export interface IEnvironment {
     ACCESS_TOKEN_TTL: string;
     REFRESH_TOKEN_TTL: string;
     COOKIE_TTL: string;
+    COOKIE_SECRET: string;
 }

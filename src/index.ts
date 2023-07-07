@@ -8,19 +8,21 @@ import { pageNotFound } from './controllers/index.controller';
 import { errorHandler } from './errors/index.exception';
 import prisma from './config/prisma.config';
 import environmentSchema from './validations/environment.validation';
+import environment from './config/environment.config';
+
 config();
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000 as number;
 const MONGODB_URL = process.env.MONGODB_DATABASE_URL as string;
 
-app.use(cookieParser());
+app.use(cookieParser(environment.COOKIE_SECRET));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.set('X-Powered-By', false);
-app.set('Content-Type', 'application/json');
+app.set('content-type', 'application/json');
+app.set('x-powered-by', false);
 
 app.use('/api/v1', router);
 

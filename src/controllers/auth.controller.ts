@@ -1,20 +1,82 @@
 import { NextFunction, Request, Response } from "express";
-import { IRegister, IUserResponse } from "../interfaces/auth.interface";
-import authSchema from "../validations/auth.validation";
+import { ILogin, IRegister, IUserResponse } from "../interfaces/auth.interface";
+import { loginSchema, registerSchema } from "../validations/auth.validation";
 import { BadRequestExceptions } from "../errors/client.exception";
 import prisma from "../config/prisma.config";
 import bcrypt from 'bcrypt';
 import { StatusCode } from "../utils/status_code.utils";
 import { User } from "@prisma/client";
+import { accessTokenSign, refreshTokenSign } from "../config/jwt.config";
+import environment from "../config/environment.config";
 
 const login = async (req: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({ message: 'Login' });
+    const reqBody: ILogin = req.body as ILogin;
+
+    try {
+        await loginSchema.validateAsync(reqBody);
+    } catch (error) {
+        throw new BadRequestExceptions('Invalid Request Body');
+    }
+
+    const user: User | null = await prisma.user.findUnique({
+        where: {
+            email: reqBody.email,
+        }
+    });
+
+    if (!user) {
+        throw new BadRequestExceptions('Invalid email or password');
+    }
+
+    const isPasswordValid: boolean = await bcrypt.compare(reqBody.password, user.password);
+
+    if (!isPasswordValid) {
+        throw new BadRequestExceptions('Invalid email or password');
+    }
+
+    const data: IUserResponse = {
+        username: user.username,
+        email: user.email,
+        name: user.name,
+    };
+
+    const accessToken: string = accessTokenSign(data);
+    const refreshToken: string = refreshTokenSign(data);
+
+    await prisma.user.update({
+        where: {
+            email: reqBody.email,
+        },
+        data: {
+            refreshToken,
+        }
+    });
+
+    const maxAge: number = Number(environment.COOKIE_TTL) * 60 * 1000;
+
+    return res
+        .status(StatusCode.OK)
+        .cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            maxAge: maxAge,
+            sameSite: 'none',
+            secure: true,
+            signed: true,
+        })
+        .json({
+            status: StatusCode.OK,
+            message: 'Successfully logged in',
+            data: {
+                ...data,
+                accessToken,
+            }
+        });
 };
 const register = async (req: Request, res: Response): Promise<Response> => {
     const reqBody: IRegister = req.body as IRegister;
 
     try {
-        await authSchema.validateAsync(reqBody);
+        await registerSchema.validateAsync(reqBody);
     } catch (error) {
         throw new BadRequestExceptions('Invalid Request Body');
     }
@@ -36,6 +98,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
         name: user.name,
         createdAt: user.createdAt,
     };
+
     return res.status(StatusCode.CREATED).json({
         status: StatusCode.CREATED,
         message: 'Successfully registered',
