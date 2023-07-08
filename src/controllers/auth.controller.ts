@@ -83,28 +83,31 @@ const register = async (req: Request, res: Response): Promise<Response> => {
 
     const hashedPassword: string = await bcrypt.hash(reqBody.password, 10);
 
-    const user: User = await prisma.user.create({
-        data: {
-            email: reqBody.email,
-            name: reqBody.name,
-            password: hashedPassword,
-            username: reqBody.username,
-        }
-    });
+    try {
+        const user: User = await prisma.user.create({
+            data: {
+                email: reqBody.email,
+                name: reqBody.name,
+                password: hashedPassword,
+                username: reqBody.username,
+            }
+        });
 
-    const data: IUserResponse = {
-        username: user.username,
-        email: user.email,
-        name: user.name,
-        createdAt: user.createdAt,
-    };
+        const data: IUserResponse = {
+            username: user.username,
+            email: user.email,
+            name: user.name,
+            createdAt: user.createdAt,
+        };
 
-    return res.status(StatusCode.CREATED).json({
-        status: StatusCode.CREATED,
-        message: 'Successfully registered',
-        data,
-    });
-
+        return res.status(StatusCode.CREATED).json({
+            status: StatusCode.CREATED,
+            message: 'Successfully registered',
+            data,
+        });
+    } catch (error) {
+        throw new BadRequestExceptions('Email or username already exists');
+    }
 };
 const logout = async (req: Request, res: Response): Promise<Response> => {
     const refreshToken: string = req.signedCookies.refreshToken;
